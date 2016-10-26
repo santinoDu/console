@@ -1,5 +1,5 @@
 ;(function (window) {
-
+    'use strict';
     var html = '<div id="__console">' +
         '<div class="-c-switch">Console</div>' +
         '<div class="-c-content"></div>' +
