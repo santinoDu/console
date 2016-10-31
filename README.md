@@ -14,3 +14,14 @@ Preview
 <div align="center">
     <img src="images/open.png" />
 </div>
+
+### Building
+
+``` bash
+npm run build
+```
+
+### Demo
+
+open `tests/index.html`
+
