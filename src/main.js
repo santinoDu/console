@@ -42,7 +42,6 @@ export default class Console {
         })
 
         this.switchBtn.addEventListener('click', () => {
-            if(this.switchBtn.classList.contains('noClick')) return;
             dom.hide(this.switchBtn).show(this.logBox, this.toolBar)
         })
     }

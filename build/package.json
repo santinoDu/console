@@ -1,6 +1,6 @@
 {
   "name": "mobile-console.js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "a console panel for mobile phone, replace alert",
   "main": "build.js",
   "scripts": {

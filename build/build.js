@@ -120,7 +120,6 @@
 	            });
 
 	            this.switchBtn.addEventListener('click', function () {
-	                if (_this.switchBtn.classList.contains('noClick')) return;
 	                _dom2.default.hide(_this.switchBtn).show(_this.logBox, _this.toolBar);
 	            });
 	        }
@@ -586,19 +585,15 @@
 	});
 	exports.default = drag;
 	function drag(obj) {
-		obj.onmousedown = function (evt) {
 
-			if (obj.setCapture) {
-				obj.setCapture();
-			}
+		obj.ontouchstart = function (evt) {
 
-			var e = evt || window.event;
+			var e = evt.targetTouches[0];
 			var disX = e.clientX - this.offsetLeft;
 			var disY = e.clientY - this.offsetTop;
 
-			document.onmousemove = function (evt) {
-				obj.classList.add('noClick');
-				var e = evt || window.event;
+			var handleMove = function handleMove(evt) {
+				var e = evt.targetTouches[0];
 
 				var L = e.clientX - disX;
 				var T = e.clientY - disY;
@@ -617,18 +612,16 @@
 
 				obj.style.left = L + "px";
 				obj.style.top = T + "px";
-				// obj.style.cssText += `-webkit-transform: translate2d(${L}px, ${T}px);`
 			};
 
-			document.onmouseup = function () {
-				document.onmousemove = document.onmouseup = null;
-				if (obj.releaseCapture) {
-					obj.releaseCapture();
-				}
+			document.addEventListener("touchmove", handleMove, false);
+
+			var handleEnd = function handleEnd() {
+				document.removeEventListener("touchmove", handleMove, false);
+				document.removeEventListener("touchend", handleEnd, false);
 			};
 
-			obj.classList.remove('noClick');
-			return false;
+			document.addEventListener("touchend", handleEnd, false);
 		};
 	}
 

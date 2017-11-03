@@ -1,20 +1,16 @@
 export default function drag(obj) {
-	obj.onmousedown = function (evt) {
 
-		if (obj.setCapture) {
-			obj.setCapture()
-		}
+	obj.ontouchstart = function (evt) {
 
-		var e = evt || window.event;
-		var disX = e.clientX - this.offsetLeft;
-		var disY = e.clientY - this.offsetTop;
+		const e = evt.targetTouches[0];
+		const disX = e.clientX - this.offsetLeft;
+		const disY = e.clientY - this.offsetTop;
 
-		document.onmousemove = function (evt) {
-			obj.classList.add('noClick');
-			var e = evt || window.event;
+		const handleMove = function (evt) {
+			const e = evt.targetTouches[0];
 
-			var L = e.clientX - disX;
-			var T = e.clientY - disY;
+			let L = e.clientX - disX;
+			let T = e.clientY - disY;
 
 			if (T < 0) {
 				T = 0;
@@ -30,17 +26,16 @@ export default function drag(obj) {
 
 			obj.style.left = L + "px";
 			obj.style.top = T + "px";
-			// obj.style.cssText += `-webkit-transform: translate2d(${L}px, ${T}px);`
 		};
 
-		document.onmouseup = function () {
-			document.onmousemove = document.onmouseup = null;
-			if (obj.releaseCapture) {
-				obj.releaseCapture();
-			}
+		document.addEventListener("touchmove", handleMove, false);
+
+		const handleEnd = function () {
+			document.removeEventListener("touchmove", handleMove, false);
+			document.removeEventListener("touchend", handleEnd, false);
 		};
 
-		obj.classList.remove('noClick');
-		return false;
+		document.addEventListener("touchend", handleEnd, false);
+
 	}
 }
