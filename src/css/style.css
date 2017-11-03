@@ -3,11 +3,33 @@
     z-index: 2147483647;
 }
 
+#__console .debug {
+    color: #465ed1;
+}
+
+#__console .error {
+    color: #465ed1;
+    background: #ffe6e3;
+}
+
+#__console .info {
+    color: #465ed1;
+    background: #ffffff;
+}
+
+#__console .log {
+    color: #000000;
+    background: #ffffff;
+}
+
+#__console .warn {
+    color: #465ed1;
+    background: #fff7db;
+}
+
 .-c-switch{
     display: block;
     position: fixed;
-    right: 10px;
-    bottom: 10px;
     border-radius: 4px;
     box-shadow: 0 0 8px rgba( 0, 0, 0, .4);
     padding: 8px 16px;
@@ -37,6 +59,7 @@
     padding: 6px 8px;
     overflow: hidden;
     line-height: 1.3;
+    -webkit-user-select: text;
     word-break: break-word;
 }
 

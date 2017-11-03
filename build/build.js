@@ -62,6 +62,10 @@
 
 	var _dom2 = _interopRequireDefault(_dom);
 
+	var _drag = __webpack_require__(7);
+
+	var _drag2 = _interopRequireDefault(_drag);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -79,9 +83,7 @@
 	        _classCallCheck(this, Console);
 
 	        this.render();
-	        this.switchBtn = _dom2.default.$(switchBtnSelector);
-	        this.toolBar = _dom2.default.$(toolBarSelector);
-	        this.logBox = _dom2.default.$(logBoxSelector);
+	        this.prepareProperty();
 	        this.bindEvent();
 	        this.core();
 	    }
@@ -89,7 +91,19 @@
 	    _createClass(Console, [{
 	        key: 'render',
 	        value: function render() {
-	            _dom2.default.append(_dom2.default.$('body'), _dom2.default.createElement('div', null, _index2.default));
+	            var ele = _dom2.default.createElement('div', null, _index2.default);
+	            _dom2.default.append(_dom2.default.$('body'), ele);
+	        }
+	    }, {
+	        key: 'prepareProperty',
+	        value: function prepareProperty() {
+	            this.switchBtn = _dom2.default.$(switchBtnSelector);
+	            // 设置 Switch Button 初始位置, 并使其可以 Drag
+	            this.switchBtn.style.left = document.documentElement.clientWidth - this.switchBtn.offsetWidth - 10 + "px";
+	            this.switchBtn.style.top = document.documentElement.clientHeight - this.switchBtn.offsetHeight - 10 + "px";
+	            (0, _drag2.default)(this.switchBtn);
+	            this.toolBar = _dom2.default.$(toolBarSelector);
+	            this.logBox = _dom2.default.$(logBoxSelector);
 	        }
 	    }, {
 	        key: 'bindEvent',
@@ -106,16 +120,17 @@
 	            });
 
 	            this.switchBtn.addEventListener('click', function () {
+	                if (_this.switchBtn.classList.contains('noClick')) return;
 	                _dom2.default.hide(_this.switchBtn).show(_this.logBox, _this.toolBar);
 	            });
 	        }
 	    }, {
 	        key: 'pushLog',
-	        value: function pushLog(msg) {
+	        value: function pushLog(msg, type) {
 	            var text = msg.map(function (val) {
 	                return JSON.stringify(val);
 	            }).join(' '),
-	                log = _dom2.default.createElement('div', { class: logItemClass }, text);
+	                log = _dom2.default.createElement('div', { class: logItemClass + ' ' + type }, text);
 	            _dom2.default.append(this.logBox, log);
 	            this.logBox.scrollTop = this.logBox.scrollHeight;
 	        }
@@ -131,7 +146,7 @@
 	                        args[_key] = arguments[_key];
 	                    }
 
-	                    _this2.pushLog(args);
+	                    _this2.pushLog(args, method);
 	                    original.apply(console, args);
 	                };
 	            });
@@ -181,7 +196,7 @@
 
 
 	// module
-	exports.push([module.id, "#__console{\n    position: relative;\n    z-index: 2147483647;\n}\n\n.-c-switch{\n    display: block;\n    position: fixed;\n    right: 10px;\n    bottom: 10px;\n    border-radius: 4px;\n    box-shadow: 0 0 8px rgba( 0, 0, 0, .4);\n    padding: 8px 16px;\n    line-height: 1;\n    font-size: 14px;\n    color: #fff;\n    background-color: #04be02;\n}\n\n.-c-content{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 40px;\n    border-top: 1px solid #eee;\n    overflow-x: hidden;\n    overflow-y: auto;\n    max-height: 50%;\n    background-color: #fff;\n    -webkit-overflow-scrolling: touch;\n}\n\n.-c-log{\n    margin: 0;\n    border-bottom: 1px solid #eee;\n    padding: 6px 8px;\n    overflow: hidden;\n    line-height: 1.3;\n    word-break: break-word;\n}\n\n.-c-toolbar{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    line-height: 40px;\n    background-color: #fff;\n}\n\n.-c-tool{\n    position: relative;\n    float: left;\n    width: 50%;\n    text-align: center;\n    text-decoration: none;\n    color: #000;\n}\n\n.-c-clear::before{\n    content: \"\";\n    position: absolute;\n    top: 7px;\n    bottom: 7px;\n    right: 0;\n    border-left: 1px solid #d9d9d9;\n}", ""]);
+	exports.push([module.id, "#__console{\n    position: relative;\n    z-index: 2147483647;\n}\n\n#__console .debug {\n    color: #465ed1;\n}\n\n#__console .error {\n    color: #465ed1;\n    background: #ffe6e3;\n}\n\n#__console .info {\n    color: #465ed1;\n    background: #ffffff;\n}\n\n#__console .log {\n    color: #000000;\n    background: #ffffff;\n}\n\n#__console .warn {\n    color: #465ed1;\n    background: #fff7db;\n}\n\n.-c-switch{\n    display: block;\n    position: fixed;\n    border-radius: 4px;\n    box-shadow: 0 0 8px rgba( 0, 0, 0, .4);\n    padding: 8px 16px;\n    line-height: 1;\n    font-size: 14px;\n    color: #fff;\n    background-color: #04be02;\n}\n\n.-c-content{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 40px;\n    border-top: 1px solid #eee;\n    overflow-x: hidden;\n    overflow-y: auto;\n    max-height: 50%;\n    background-color: #fff;\n    -webkit-overflow-scrolling: touch;\n}\n\n.-c-log{\n    margin: 0;\n    border-bottom: 1px solid #eee;\n    padding: 6px 8px;\n    overflow: hidden;\n    line-height: 1.3;\n    -webkit-user-select: text;\n    word-break: break-word;\n}\n\n.-c-toolbar{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    line-height: 40px;\n    background-color: #fff;\n}\n\n.-c-tool{\n    position: relative;\n    float: left;\n    width: 50%;\n    text-align: center;\n    text-decoration: none;\n    color: #000;\n}\n\n.-c-clear::before{\n    content: \"\";\n    position: absolute;\n    top: 7px;\n    bottom: 7px;\n    right: 0;\n    border-left: 1px solid #d9d9d9;\n}", ""]);
 
 	// exports
 
@@ -559,6 +574,63 @@
 	        el.innerHTML = content;
 	    }
 	};
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = drag;
+	function drag(obj) {
+		obj.onmousedown = function (evt) {
+
+			if (obj.setCapture) {
+				obj.setCapture();
+			}
+
+			var e = evt || window.event;
+			var disX = e.clientX - this.offsetLeft;
+			var disY = e.clientY - this.offsetTop;
+
+			document.onmousemove = function (evt) {
+				obj.classList.add('noClick');
+				var e = evt || window.event;
+
+				var L = e.clientX - disX;
+				var T = e.clientY - disY;
+
+				if (T < 0) {
+					T = 0;
+				} else if (T > document.documentElement.clientHeight - obj.offsetHeight) {
+					T = document.documentElement.clientHeight - obj.offsetHeight;
+				}
+
+				if (L < 0) {
+					L = 0;
+				} else if (L > document.documentElement.clientWidth - obj.offsetWidth) {
+					L = document.documentElement.clientWidth - obj.offsetWidth;
+				}
+
+				obj.style.left = L + "px";
+				obj.style.top = T + "px";
+				// obj.style.cssText += `-webkit-transform: translate2d(${L}px, ${T}px);`
+			};
+
+			document.onmouseup = function () {
+				document.onmousemove = document.onmouseup = null;
+				if (obj.releaseCapture) {
+					obj.releaseCapture();
+				}
+			};
+
+			obj.classList.remove('noClick');
+			return false;
+		};
+	}
 
 /***/ })
 /******/ ]);
