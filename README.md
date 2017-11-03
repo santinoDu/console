@@ -23,7 +23,7 @@ npm run build
 
 ### ES6
 ```
-import MobileConsole from 'mobile-console.js'
+import 'mobile-console.js';
 new MobileConsole();
 ```
 
