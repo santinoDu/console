@@ -10,7 +10,7 @@ const hideClass = '-c-hide'
 const logItemClass = '-c-log'
 const consoleMethods = ['debug', 'error', 'info', 'log', 'warn']
 
-class Console {
+export default class Console {
     constructor () {
         this.render()
         this.switchBtn = dom.$(switchBtnSelector)
@@ -53,4 +53,4 @@ class Console {
     }
 }
 
-new Console()
+window.MobileConsole = Console;

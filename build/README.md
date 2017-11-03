@@ -21,12 +21,6 @@ Preview
 npm run build
 ```
 
-### ES6
-```
-import MobileConsole from 'mobile-console'
-new MobileConsole();
-```
-
 ### Demo
 
 open `tests/index.html`

@@ -2,7 +2,7 @@
   "name": "mobile-console.js",
   "version": "0.0.1",
   "description": "a console panel for mobile phone, replace alert",
-  "main": "build.js",
+  "main": "webpack.config.js",
   "scripts": {
     "build": "rm -rf build && webpack && cp package.json build/package.json && cp README.md build/README.md",
     "publish": "npm run build && npm publish build"
