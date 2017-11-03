@@ -7,6 +7,7 @@ export default function drag(obj) {
 		const disY = e.clientY - this.offsetTop;
 
 		const handleMove = function (evt) {
+			evt.preventDefault();
 			const e = evt.targetTouches[0];
 
 			let L = e.clientX - disX;
