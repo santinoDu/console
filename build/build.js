@@ -593,6 +593,7 @@
 			var disY = e.clientY - this.offsetTop;
 
 			var handleMove = function handleMove(evt) {
+				evt.preventDefault();
 				var e = evt.targetTouches[0];
 
 				var L = e.clientX - disX;
