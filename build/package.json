@@ -5,7 +5,7 @@
   "main": "build.js",
   "scripts": {
     "build": "rm -rf build && webpack && cp package.json build/package.json && cp README.md build/README.md",
-    "publish": "npm run build && npm publish build"
+    "pub": "npm run build && npm publish build"
   },
   "repository": {
     "type": "git",
