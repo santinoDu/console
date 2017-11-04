@@ -87,6 +87,7 @@
 	var toolBarSelector = '.-c-toolbar';
 	var clearClass = '-c-clear';
 	var hideClass = '-c-hide';
+	var ajaxClass = '-c-ajax';
 	var logItemClass = '-c-log';
 	var consoleMethods = ['debug', 'error', 'info', 'log', 'warn'];
 
@@ -97,6 +98,7 @@
 	        this.render();
 	        this.prepareProperty();
 	        this.bindEvent();
+	        this.catchAjax();
 	        this.core();
 	    }
 
@@ -109,6 +111,7 @@
 	    }, {
 	        key: 'prepareProperty',
 	        value: function prepareProperty() {
+	            this.ajaxEnable = false;
 	            this.switchBtn = _dom2.default.$(switchBtnSelector);
 	            // 设置 Switch Button 初始位置, 并使其可以 Drag
 	            this.switchBtn.style.left = document.documentElement.clientWidth - this.switchBtn.offsetWidth - 10 + "px";
@@ -129,6 +132,14 @@
 	                } else if (target.classList.contains(hideClass)) {
 	                    _dom2.default.hide(_this2.logBox, _this2.toolBar).show(_this2.switchBtn);
 	                }
+	                if (target.classList.contains(ajaxClass)) {
+	                    _this2.ajaxEnable = !_this2.ajaxEnable;
+	                    if (_this2.ajaxEnable) {
+	                        target.innerText = 'AJAX(ON)';
+	                    } else {
+	                        target.innerText = 'AJAX(OFF)';
+	                    }
+	                }
 	            });
 
 	            this.switchBtn.addEventListener('click', function () {
@@ -144,11 +155,15 @@
 
 	                _this2.pushLog([message], 'Exception');
 	            };
-
+	        }
+	    }, {
+	        key: 'catchAjax',
+	        value: function catchAjax() {
 	            // 捕获 xhr 错误
 	            // TODO 添加 REQUEST BODY 和 RESPONSE DATA
 	            var _this = this;
 	            _xhr2.default.fn = function (xhr) {
+	                if (!_this.ajaxEnable) return;
 	                if (xhr.readyState === XMLHttpRequest.DONE) {
 	                    if (xhr.status >= 200 && xhr.status <= 299) {
 	                        _this.pushLog(['[AJAX] ' + xhr.open_fn_parmas.method + ' ' + xhr.open_fn_parmas.url + ' ' + xhr.status + ' (' + xhr.statusText + ')'], 'AJAXSUCCESS');
@@ -165,10 +180,11 @@
 	                    var request = _ref.request,
 	                        _response = _ref.response;
 
+	                    if (!_this.ajaxEnable) return;
 	                    if (_response.status >= 200 && _response.status <= 299) {
-	                        _this.pushAjaxLog(request.clone(), _response.clone(), 'AJAXSUCCESS');
+	                        _this.pushAjaxLog(request, _response, 'AJAXSUCCESS');
 	                    } else {
-	                        _this.pushAjaxLog(request.clone(), _response.clone(), 'AJAXFAILURE');
+	                        _this.pushAjaxLog(request, _response, 'AJAXFAILURE');
 	                    }
 	                    return _response;
 	                },
@@ -177,6 +193,7 @@
 	                        _responseError = _ref2.responseError;
 
 	                    // TODO 待确定
+	                    if (!_this.ajaxEnable) return;
 	                    _this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + _responseError.status + ' (' + _responseError.statusText + ')'], 'AJAXFAILURE');
 	                    return Promise.reject(_responseError);
 	                }
@@ -188,7 +205,9 @@
 	            var _this3 = this;
 
 	            try {
-	                Promise.all([request.text(), response.text()]).then(function (data) {
+	                request = request.clone();
+	                response = response.clone();
+	                Promise.all([request.json(), response.json()]).then(function (data) {
 	                    _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
 	                    data[0] && _this3.pushLog(['[REQUEST BODY] ' + data[0]], type);
 	                    data[1] && _this3.pushLog(['[RESPONSE DATA] ' + data[1]], type);
@@ -271,7 +290,7 @@
 
 
 	// module
-	exports.push([module.id, "#__console{\n    position: relative;\n    z-index: 2147483647;\n}\n\n#__console .debug {\n    color: #465ed1;\n}\n\n#__console .error {\n    color: #465ed1;\n    background: #ffe6e3;\n}\n\n#__console .Exception {\n    color: #d10a0d;\n    background: #ffe6e3;\n}\n\n#__console .AJAXSUCCESS {\n    color: #20d10d;\n    background: #ddffc8;\n}\n\n#__console .AJAXFAILURE {\n    color: #d10a0d;\n    background: #ffe6e3;\n}\n\n#__console .info {\n    color: #465ed1;\n    background: #ffffff;\n}\n\n#__console .log {\n    color: #000000;\n    background: #ffffff;\n}\n\n#__console .warn {\n    color: #465ed1;\n    background: #fff7db;\n}\n\n.-c-switch{\n    display: block;\n    position: fixed;\n    border-radius: 4px;\n    box-shadow: 0 0 8px rgba( 0, 0, 0, .4);\n    padding: 8px 16px;\n    line-height: 1;\n    font-size: 14px;\n    color: #fff;\n    background-color: #04be02;\n}\n\n.-c-content{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 40px;\n    border-top: 1px solid #eee;\n    overflow-x: hidden;\n    overflow-y: auto;\n    max-height: 50%;\n    background-color: #fff;\n    -webkit-overflow-scrolling: touch;\n}\n\n.-c-log{\n    margin: 0;\n    border-bottom: 1px solid #eee;\n    padding: 6px 8px;\n    overflow: hidden;\n    line-height: 1.3;\n    -webkit-user-select: text;\n    word-break: break-word;\n}\n\n.-c-toolbar{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    line-height: 40px;\n    background-color: #fff;\n}\n\n.-c-tool{\n    position: relative;\n    float: left;\n    width: 50%;\n    text-align: center;\n    text-decoration: none;\n    color: #000;\n}\n\n.-c-clear::before{\n    content: \"\";\n    position: absolute;\n    top: 7px;\n    bottom: 7px;\n    right: 0;\n    border-left: 1px solid #d9d9d9;\n}", ""]);
+	exports.push([module.id, "#__console{\n    position: relative;\n    z-index: 2147483647;\n}\n\n#__console .debug {\n    color: #465ed1;\n}\n\n#__console .error {\n    color: #465ed1;\n    background: #ffe6e3;\n}\n\n#__console .Exception {\n    color: #d10a0d;\n    background: #ffe6e3;\n}\n\n#__console .AJAXSUCCESS {\n    color: #20d10d;\n    background: #ddffc8;\n}\n\n#__console .AJAXFAILURE {\n    color: #d10a0d;\n    background: #ffe6e3;\n}\n\n#__console .info {\n    color: #465ed1;\n    background: #ffffff;\n}\n\n#__console .log {\n    color: #000000;\n    background: #ffffff;\n}\n\n#__console .warn {\n    color: #465ed1;\n    background: #fff7db;\n}\n\n.-c-switch{\n    display: block;\n    position: fixed;\n    border-radius: 4px;\n    box-shadow: 0 0 8px rgba( 0, 0, 0, .4);\n    padding: 8px 16px;\n    line-height: 1;\n    font-size: 14px;\n    color: #fff;\n    background-color: #04be02;\n}\n\n.-c-content{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 40px;\n    border-top: 1px solid #eee;\n    overflow-x: hidden;\n    overflow-y: auto;\n    max-height: 50%;\n    background-color: #fff;\n    -webkit-overflow-scrolling: touch;\n}\n\n.-c-log{\n    margin: 0;\n    border-bottom: 1px solid #eee;\n    padding: 6px 8px;\n    overflow: hidden;\n    line-height: 1.3;\n    -webkit-user-select: text;\n    word-break: break-word;\n}\n\n.-c-toolbar{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    line-height: 40px;\n    background-color: #fff;\n}\n\n.-c-tool{\n    position: relative;\n    float: left;\n    width: 33.33333%;\n    text-align: center;\n    text-decoration: none;\n    color: #000;\n}\n\n.-c-clear::before{\n    content: \"\";\n    position: absolute;\n    top: 7px;\n    bottom: 7px;\n    right: 0;\n    border-left: 1px solid #d9d9d9;\n}\n\n.-c-ajax::before{\n    content: \"\";\n    position: absolute;\n    top: 7px;\n    bottom: 7px;\n    right: 0;\n    border-left: 1px solid #d9d9d9;\n}", ""]);
 
 	// exports
 
@@ -587,7 +606,7 @@
 /* 5 */
 /***/ (function(module, exports) {
 
-	module.exports = "<div id=\"__console\">\n    <div class=\"-c-switch\">Console</div>\n    <div class=\"-c-content\"></div>\n    <div class=\"-c-toolbar\">\n        <div class=\"-c-tool -c-clear\">Clear</div>\n        <div class=\"-c-tool -c-hide\">Hide</div>\n    </div>\n</div>\n";
+	module.exports = "<div id=\"__console\">\n    <div class=\"-c-switch\">Console</div>\n    <div class=\"-c-content\"></div>\n    <div class=\"-c-toolbar\">\n        <div class=\"-c-tool -c-clear\">Clear</div>\n        <div class=\"-c-tool -c-ajax\">AJAX(OFF)</div>\n        <div class=\"-c-tool -c-hide\">Hide</div>\n    </div>\n</div>\n";
 
 /***/ }),
 /* 6 */

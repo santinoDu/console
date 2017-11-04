@@ -91,13 +91,22 @@
 .-c-tool{
     position: relative;
     float: left;
-    width: 50%;
+    width: 33.33333%;
     text-align: center;
     text-decoration: none;
     color: #000;
 }
 
 .-c-clear::before{
+    content: "";
+    position: absolute;
+    top: 7px;
+    bottom: 7px;
+    right: 0;
+    border-left: 1px solid #d9d9d9;
+}
+
+.-c-ajax::before{
     content: "";
     position: absolute;
     top: 7px;
