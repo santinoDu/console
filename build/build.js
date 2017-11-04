@@ -180,11 +180,12 @@
 	                    var request = _ref.request,
 	                        _response = _ref.response;
 
-	                    if (!_this.ajaxEnable) return;
-	                    if (_response.status >= 200 && _response.status <= 299) {
-	                        _this.pushAjaxLog(request, _response, 'AJAXSUCCESS');
-	                    } else {
-	                        _this.pushAjaxLog(request, _response, 'AJAXFAILURE');
+	                    if (_this.ajaxEnable) {
+	                        if (_response.status >= 200 && _response.status <= 299) {
+	                            _this.pushAjaxLog(request, _response, 'AJAXSUCCESS');
+	                        } else {
+	                            _this.pushAjaxLog(request, _response, 'AJAXFAILURE');
+	                        }
 	                    }
 	                    return _response;
 	                },
@@ -193,8 +194,9 @@
 	                        _responseError = _ref2.responseError;
 
 	                    // TODO 待确定
-	                    if (!_this.ajaxEnable) return;
-	                    _this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + _responseError.status + ' (' + _responseError.statusText + ')'], 'AJAXFAILURE');
+	                    if (_this.ajaxEnable) {
+	                        _this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + _responseError.status + ' (' + _responseError.statusText + ')'], 'AJAXFAILURE');
+	                    }
 	                    return Promise.reject(_responseError);
 	                }
 	            });

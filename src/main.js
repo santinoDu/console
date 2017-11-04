@@ -95,18 +95,20 @@ export default class Console {
         // 捕获 fetch 错误
         const unregister = fetchIntercept.register({
             response: function ({request, response}) {
-                if (!_this.ajaxEnable) return;
-                if (response.status >= 200 && response.status <= 299) {
-                    _this.pushAjaxLog(request, response, 'AJAXSUCCESS');
-                } else {
-                    _this.pushAjaxLog(request, response, 'AJAXFAILURE');
+                if (_this.ajaxEnable) {
+                    if (response.status >= 200 && response.status <= 299) {
+                        _this.pushAjaxLog(request, response, 'AJAXSUCCESS');
+                    } else {
+                        _this.pushAjaxLog(request, response, 'AJAXFAILURE');
+                    }
                 }
                 return response;
             },
             responseError: function ({request, responseError}) {
                 // TODO 待确定
-                if (!_this.ajaxEnable) return;
-                _this.pushLog([`[AJAX] ${request.method} ${request.url} ${responseError.status} (${responseError.statusText})`], 'AJAXFAILURE');
+                if (_this.ajaxEnable) {
+                    _this.pushLog([`[AJAX] ${request.method} ${request.url} ${responseError.status} (${responseError.statusText})`], 'AJAXFAILURE');
+                }
                 return Promise.reject(responseError);
             }
         });
