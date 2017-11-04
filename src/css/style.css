@@ -12,6 +12,21 @@
     background: #ffe6e3;
 }
 
+#__console .Exception {
+    color: #d10a0d;
+    background: #ffe6e3;
+}
+
+#__console .AJAXSUCCESS {
+    color: #20d10d;
+    background: #ddffc8;
+}
+
+#__console .AJAXFAILURE {
+    color: #d10a0d;
+    background: #ffe6e3;
+}
+
 #__console .info {
     color: #465ed1;
     background: #ffffff;

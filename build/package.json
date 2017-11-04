@@ -1,6 +1,6 @@
 {
   "name": "mobile-console.js",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "a console panel for mobile phone, replace alert",
   "main": "build.js",
   "scripts": {
@@ -26,5 +26,8 @@
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
     "webpack": "^1.12.2"
+  },
+  "dependencies": {
+    "v-block.net": "^1.0.0-v.x.x"
   }
 }

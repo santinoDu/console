@@ -6,10 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 </head>
 <body>
-
+<a href="#" id="link">just a link</a>
 <script src="../build/build.js"></script>
 <script>
     new MobileConsole();
+    document.getElementById('link').onclick = function(){
+        var httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            console.log('----->', httpRequest.readyState);
+        };
+        httpRequest.open('GET', '/test', true);
+        httpRequest.send();
+    }
 </script>
 </body>
 </html>

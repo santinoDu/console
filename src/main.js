@@ -2,6 +2,7 @@ import './css/style.css'
 import html from './index.html'
 import dom from './utils/dom.js'
 import drag from './utils/drag.js'
+import ProxyXMLHttpRequest from './utils/xhr.js'
 
 const logBoxSelector = '.-c-content'
 const switchBtnSelector = '.-c-switch'
@@ -44,6 +45,35 @@ export default class Console {
         this.switchBtn.addEventListener('click', () => {
             dom.hide(this.switchBtn).show(this.logBox, this.toolBar)
         })
+
+        // 捕获页面错误
+        const _onerror = window.onerror || function noop(){};
+
+        window.onerror = (msg, url, lineNo, columnNo, error) => {
+            _onerror();
+            const message = [
+                'Message: ' + msg,
+                'URL: ' + url,
+                'Line: ' + lineNo,
+                'Column: ' + columnNo,
+                'Error object: ' + JSON.stringify(error)
+            ].join(' <br/> ');
+
+            this.pushLog([message], 'Exception');
+        };
+
+        // 捕获 xhr 错误
+        const _this = this;
+        ProxyXMLHttpRequest.fn = function (xhr) {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status >= 200 && xhr.status <= 299) {
+                    _this.pushLog([`[AJAX] ${xhr.open_fn_parmas.method} ${xhr.open_fn_parmas.url} ${xhr.status} (${xhr.statusText})`], 'AJAXSUCCESS');
+                } else {
+                    _this.pushLog([`[AJAX] ${xhr.open_fn_parmas.method} ${xhr.open_fn_parmas.url} ${xhr.status} (${xhr.statusText})`], 'AJAXFAILURE');
+                }
+            }
+        };
+        window.XMLHttpRequest = ProxyXMLHttpRequest;
     }
     pushLog (msg, type) {
         let text = msg.map(val => JSON.stringify(val)).join(' '),

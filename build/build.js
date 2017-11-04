@@ -66,6 +66,10 @@
 
 	var _drag2 = _interopRequireDefault(_drag);
 
+	var _xhr = __webpack_require__(8);
+
+	var _xhr2 = _interopRequireDefault(_xhr);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -108,20 +112,43 @@
 	    }, {
 	        key: 'bindEvent',
 	        value: function bindEvent() {
-	            var _this = this;
+	            var _this2 = this;
 
 	            this.toolBar.addEventListener('click', function (e) {
 	                var target = e.target;
 	                if (target.classList.contains(clearClass)) {
-	                    _dom2.default.html(_this.logBox, '');
+	                    _dom2.default.html(_this2.logBox, '');
 	                } else if (target.classList.contains(hideClass)) {
-	                    _dom2.default.hide(_this.logBox, _this.toolBar).show(_this.switchBtn);
+	                    _dom2.default.hide(_this2.logBox, _this2.toolBar).show(_this2.switchBtn);
 	                }
 	            });
 
 	            this.switchBtn.addEventListener('click', function () {
-	                _dom2.default.hide(_this.switchBtn).show(_this.logBox, _this.toolBar);
+	                _dom2.default.hide(_this2.switchBtn).show(_this2.logBox, _this2.toolBar);
 	            });
+
+	            // 捕获页面错误
+	            var _onerror = window.onerror || function noop() {};
+
+	            window.onerror = function (msg, url, lineNo, columnNo, error) {
+	                _onerror();
+	                var message = ['Message: ' + msg, 'URL: ' + url, 'Line: ' + lineNo, 'Column: ' + columnNo, 'Error object: ' + JSON.stringify(error)].join(' <br/> ');
+
+	                _this2.pushLog([message], 'Exception');
+	            };
+
+	            // 捕获 xhr 错误
+	            var _this = this;
+	            _xhr2.default.fn = function (xhr) {
+	                if (xhr.readyState === XMLHttpRequest.DONE) {
+	                    if (xhr.status >= 200 && xhr.status <= 299) {
+	                        _this.pushLog(['[AJAX] ' + xhr.open_fn_parmas.method + ' ' + xhr.open_fn_parmas.url + ' ' + xhr.status + ' (' + xhr.statusText + ')'], 'AJAXSUCCESS');
+	                    } else {
+	                        _this.pushLog(['[AJAX] ' + xhr.open_fn_parmas.method + ' ' + xhr.open_fn_parmas.url + ' ' + xhr.status + ' (' + xhr.statusText + ')'], 'AJAXFAILURE');
+	                    }
+	                }
+	            };
+	            window.XMLHttpRequest = _xhr2.default;
 	        }
 	    }, {
 	        key: 'pushLog',
@@ -136,7 +163,7 @@
 	    }, {
 	        key: 'core',
 	        value: function core() {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            consoleMethods.forEach(function (method) {
 	                var original = window.console[method];
@@ -145,7 +172,7 @@
 	                        args[_key] = arguments[_key];
 	                    }
 
-	                    _this2.pushLog(args, method);
+	                    _this3.pushLog(args, method);
 	                    original.apply(console, args);
 	                };
 	            });
@@ -195,7 +222,7 @@
 
 
 	// module
-	exports.push([module.id, "#__console{\n    position: relative;\n    z-index: 2147483647;\n}\n\n#__console .debug {\n    color: #465ed1;\n}\n\n#__console .error {\n    color: #465ed1;\n    background: #ffe6e3;\n}\n\n#__console .info {\n    color: #465ed1;\n    background: #ffffff;\n}\n\n#__console .log {\n    color: #000000;\n    background: #ffffff;\n}\n\n#__console .warn {\n    color: #465ed1;\n    background: #fff7db;\n}\n\n.-c-switch{\n    display: block;\n    position: fixed;\n    border-radius: 4px;\n    box-shadow: 0 0 8px rgba( 0, 0, 0, .4);\n    padding: 8px 16px;\n    line-height: 1;\n    font-size: 14px;\n    color: #fff;\n    background-color: #04be02;\n}\n\n.-c-content{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 40px;\n    border-top: 1px solid #eee;\n    overflow-x: hidden;\n    overflow-y: auto;\n    max-height: 50%;\n    background-color: #fff;\n    -webkit-overflow-scrolling: touch;\n}\n\n.-c-log{\n    margin: 0;\n    border-bottom: 1px solid #eee;\n    padding: 6px 8px;\n    overflow: hidden;\n    line-height: 1.3;\n    -webkit-user-select: text;\n    word-break: break-word;\n}\n\n.-c-toolbar{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    line-height: 40px;\n    background-color: #fff;\n}\n\n.-c-tool{\n    position: relative;\n    float: left;\n    width: 50%;\n    text-align: center;\n    text-decoration: none;\n    color: #000;\n}\n\n.-c-clear::before{\n    content: \"\";\n    position: absolute;\n    top: 7px;\n    bottom: 7px;\n    right: 0;\n    border-left: 1px solid #d9d9d9;\n}", ""]);
+	exports.push([module.id, "#__console{\n    position: relative;\n    z-index: 2147483647;\n}\n\n#__console .debug {\n    color: #465ed1;\n}\n\n#__console .error {\n    color: #465ed1;\n    background: #ffe6e3;\n}\n\n#__console .Exception {\n    color: #d10a0d;\n    background: #ffe6e3;\n}\n\n#__console .AJAXSUCCESS {\n    color: #20d10d;\n    background: #ddffc8;\n}\n\n#__console .AJAXFAILURE {\n    color: #d10a0d;\n    background: #ffe6e3;\n}\n\n#__console .info {\n    color: #465ed1;\n    background: #ffffff;\n}\n\n#__console .log {\n    color: #000000;\n    background: #ffffff;\n}\n\n#__console .warn {\n    color: #465ed1;\n    background: #fff7db;\n}\n\n.-c-switch{\n    display: block;\n    position: fixed;\n    border-radius: 4px;\n    box-shadow: 0 0 8px rgba( 0, 0, 0, .4);\n    padding: 8px 16px;\n    line-height: 1;\n    font-size: 14px;\n    color: #fff;\n    background-color: #04be02;\n}\n\n.-c-content{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 40px;\n    border-top: 1px solid #eee;\n    overflow-x: hidden;\n    overflow-y: auto;\n    max-height: 50%;\n    background-color: #fff;\n    -webkit-overflow-scrolling: touch;\n}\n\n.-c-log{\n    margin: 0;\n    border-bottom: 1px solid #eee;\n    padding: 6px 8px;\n    overflow: hidden;\n    line-height: 1.3;\n    -webkit-user-select: text;\n    word-break: break-word;\n}\n\n.-c-toolbar{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    line-height: 40px;\n    background-color: #fff;\n}\n\n.-c-tool{\n    position: relative;\n    float: left;\n    width: 50%;\n    text-align: center;\n    text-decoration: none;\n    color: #000;\n}\n\n.-c-clear::before{\n    content: \"\";\n    position: absolute;\n    top: 7px;\n    bottom: 7px;\n    right: 0;\n    border-left: 1px solid #d9d9d9;\n}", ""]);
 
 	// exports
 
@@ -625,6 +652,62 @@
 			document.addEventListener("touchend", handleEnd, false);
 		};
 	}
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = ProxyXMLHttpRequest;
+	var originXMLHttpRequest = window.XMLHttpRequest;
+
+	var propertyDescriptors = Object.getOwnPropertyDescriptors(originXMLHttpRequest);
+
+	function ProxyXMLHttpRequest() {
+		var xhr = new originXMLHttpRequest();
+
+		xhr.onreadystatechange = function () {
+			xhr.originOnreadystatechange && xhr.originOnreadystatechange();
+			ProxyXMLHttpRequest.fn.call(null, xhr);
+		};
+
+		Object.defineProperty(xhr, 'onreadystatechange', {
+			set: function set(value) {
+				xhr.originOnreadystatechange = value;
+			}
+		});
+
+		var originOpen = xhr.open.bind(xhr);
+		var originSend = xhr.send.bind(xhr);
+
+		xhr.open = function (method, url, asynchronous, username, password) {
+			xhr.open_fn_parmas = {
+				method: method,
+				url: url,
+				asynchronous: asynchronous
+			};
+			originOpen(method, url, asynchronous, username, password);
+		};
+
+		xhr.send = function (data) {
+			xhr.send_fn_params = {
+				data: data
+			};
+			originSend(data);
+		};
+
+		return xhr;
+	}
+
+	for (var key in propertyDescriptors) {
+		Object.defineProperty(ProxyXMLHttpRequest, key, propertyDescriptors[key]);
+	}
+
+	ProxyXMLHttpRequest.fn = function () {};
 
 /***/ })
 /******/ ]);
