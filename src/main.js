@@ -3,6 +3,8 @@ import html from './index.html'
 import dom from './utils/dom.js'
 import drag from './utils/drag.js'
 import ProxyXMLHttpRequest from './utils/xhr.js'
+import fetchIntercept from './utils/fetch.js'
+import isError from './utils/type';
 
 const logBoxSelector = '.-c-content'
 const switchBtnSelector = '.-c-switch'
@@ -56,7 +58,7 @@ export default class Console {
                 'URL: ' + url,
                 'Line: ' + lineNo,
                 'Column: ' + columnNo,
-                'Error object: ' + JSON.stringify(error)
+                'Error object: ' + error
             ].join(' <br/> ');
 
             this.pushLog([message], 'Exception');
@@ -74,9 +76,27 @@ export default class Console {
             }
         };
         window.XMLHttpRequest = ProxyXMLHttpRequest;
+
+        // 捕获 fetch 错误
+        const unregister = fetchIntercept.register({
+            response: function ({request, response}) {
+                if (response.status >= 200 && response.status <= 299) {
+                    _this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], 'AJAXSUCCESS');
+                } else {
+                    _this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], 'AJAXFAILURE');
+                }
+                return response;
+            },
+            responseError: function ({request, responseError}) {
+                _this.pushLog([`[AJAX] ${request.method} ${request.url} ${responseError.status} (${responseError.statusText})`], 'AJAXFAILURE');
+                return Promise.reject(responseError);
+            }
+        });
     }
     pushLog (msg, type) {
-        let text = msg.map(val => JSON.stringify(val)).join(' '),
+        let text = msg.map(val => {
+            return isError(val) ? `${val.stack}` : JSON.stringify(val);
+        }).join(' '),
             log = dom.createElement('div', {class: `${logItemClass} ${type}`}, text)
         dom.append(this.logBox, log)
         this.logBox.scrollTop = this.logBox.scrollHeight

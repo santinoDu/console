@@ -17,6 +17,11 @@
         };
         httpRequest.open('GET', '/test', true);
         httpRequest.send();
+        fetch('/test-fetch').then(function () {
+            throw new Error('error');
+        }).catch(function (err) {
+            console.log(err);
+        });
     }
 </script>
 </body>

@@ -70,6 +70,14 @@
 
 	var _xhr2 = _interopRequireDefault(_xhr);
 
+	var _fetch = __webpack_require__(9);
+
+	var _fetch2 = _interopRequireDefault(_fetch);
+
+	var _type = __webpack_require__(10);
+
+	var _type2 = _interopRequireDefault(_type);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -132,7 +140,7 @@
 
 	            window.onerror = function (msg, url, lineNo, columnNo, error) {
 	                _onerror();
-	                var message = ['Message: ' + msg, 'URL: ' + url, 'Line: ' + lineNo, 'Column: ' + columnNo, 'Error object: ' + JSON.stringify(error)].join(' <br/> ');
+	                var message = ['Message: ' + msg, 'URL: ' + url, 'Line: ' + lineNo, 'Column: ' + columnNo, 'Error object: ' + error].join(' <br/> ');
 
 	                _this2.pushLog([message], 'Exception');
 	            };
@@ -149,12 +157,34 @@
 	                }
 	            };
 	            window.XMLHttpRequest = _xhr2.default;
+
+	            // 捕获 fetch 错误
+	            var unregister = _fetch2.default.register({
+	                response: function response(_ref) {
+	                    var request = _ref.request,
+	                        _response = _ref.response;
+
+	                    if (_response.status >= 200 && _response.status <= 299) {
+	                        _this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + _response.status + ' (' + _response.statusText + ')'], 'AJAXSUCCESS');
+	                    } else {
+	                        _this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + _response.status + ' (' + _response.statusText + ')'], 'AJAXFAILURE');
+	                    }
+	                    return _response;
+	                },
+	                responseError: function responseError(_ref2) {
+	                    var request = _ref2.request,
+	                        _responseError = _ref2.responseError;
+
+	                    _this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + _responseError.status + ' (' + _responseError.statusText + ')'], 'AJAXFAILURE');
+	                    return Promise.reject(_responseError);
+	                }
+	            });
 	        }
 	    }, {
 	        key: 'pushLog',
 	        value: function pushLog(msg, type) {
 	            var text = msg.map(function (val) {
-	                return JSON.stringify(val);
+	                return (0, _type2.default)(val) ? '' + val.stack : JSON.stringify(val);
 	            }).join(' '),
 	                log = _dom2.default.createElement('div', { class: logItemClass + ' ' + type }, text);
 	            _dom2.default.append(this.logBox, log);
@@ -664,8 +694,24 @@
 	});
 	exports.default = ProxyXMLHttpRequest;
 	var originXMLHttpRequest = window.XMLHttpRequest;
+	var getOwnPropertyNames = Object.getOwnPropertyNames,
+	    getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 
-	var propertyDescriptors = Object.getOwnPropertyDescriptors(originXMLHttpRequest);
+	/*
+	* polyfill for Object.getOwnPropertyDescriptors 未考虑 symbol 属性
+	* */
+
+	function getOwnPropertyDescriptors(obj) {
+		var descs = {};
+
+		getOwnPropertyNames(obj).forEach(function (key) {
+			descs[key] = getOwnPropertyDescriptor(obj, key);
+		});
+
+		return descs;
+	}
+
+	var propertyDescriptors = Object.getOwnPropertyDescriptors ? Object.getOwnPropertyDescriptors(originXMLHttpRequest) : getOwnPropertyDescriptors(originXMLHttpRequest);
 
 	function ProxyXMLHttpRequest() {
 		var xhr = new originXMLHttpRequest();
@@ -708,6 +754,107 @@
 	}
 
 	ProxyXMLHttpRequest.fn = function () {};
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	/*
+	* https://github.com/werk85/fetch-intercept/blob/develop/src/index.js
+	* 对改代码进行修改, 用以支持拦截 fetch 请求, 记录请求
+	* */
+	attach(window);
+
+	function attach(env) {
+		env.fetch = function (fetch) {
+			return function () {
+				for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+					args[_key] = arguments[_key];
+				}
+
+				var req = new (Function.prototype.bind.apply(Request, [null].concat(args)))();
+				return interceptor(fetch, req);
+			};
+		}(env.fetch);
+	}
+
+	var interceptors = [];
+
+	function interceptor(fetch, req) {
+		var reversedInterceptors = interceptors.reduce(function (array, interceptor) {
+			return [interceptor].concat(array);
+		}, []);
+		var promise = Promise.resolve(req);
+
+		// Register request interceptors
+		reversedInterceptors.forEach(function (_ref) {
+			var request = _ref.request,
+			    requestError = _ref.requestError;
+
+			if (request || requestError) {
+				promise = promise.then(function (req) {
+					return request(req);
+				}, requestError);
+			}
+		});
+
+		// Register fetch call
+		promise = promise.then(function (req) {
+			return new Promise(function (resolve, reject) {
+				fetch(req).then(function (res) {
+					resolve({ request: req, response: res });
+				}).catch(function (err) {
+					reject({ request: req, responseError: err });
+				});
+			});
+		});
+
+		// Register response interceptors
+		reversedInterceptors.forEach(function (_ref2) {
+			var response = _ref2.response,
+			    responseError = _ref2.responseError;
+
+			if (response || responseError) {
+				promise = promise.then(response, responseError);
+			}
+		});
+
+		return promise;
+	}
+
+	exports.default = {
+		register: function register(interceptor) {
+			interceptors.push(interceptor);
+			return function () {
+				var index = interceptors.indexOf(interceptor);
+				if (index >= 0) {
+					interceptors.splice(index, 1);
+				}
+			};
+		},
+		clear: function clear() {
+			interceptors = [];
+		}
+	};
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = isError;
+	function isError(value) {
+		return Object.prototype.toString.call(value) === '[object Error]';
+	}
 
 /***/ })
 /******/ ]);
