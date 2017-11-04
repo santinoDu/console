@@ -65,6 +65,7 @@ export default class Console {
         };
 
         // 捕获 xhr 错误
+        // TODO 添加 REQUEST BODY 和 RESPONSE DATA
         const _this = this;
         ProxyXMLHttpRequest.fn = function (xhr) {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -81,18 +82,30 @@ export default class Console {
         const unregister = fetchIntercept.register({
             response: function ({request, response}) {
                 if (response.status >= 200 && response.status <= 299) {
-                    _this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], 'AJAXSUCCESS');
+                    _this.pushAjaxLog(request, response, 'AJAXSUCCESS');
                 } else {
-                    _this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], 'AJAXFAILURE');
+                    _this.pushAjaxLog(request, response, 'AJAXFAILURE');
                 }
                 return response;
             },
             responseError: function ({request, responseError}) {
+                // TODO 待确定
                 _this.pushLog([`[AJAX] ${request.method} ${request.url} ${responseError.status} (${responseError.statusText})`], 'AJAXFAILURE');
                 return Promise.reject(responseError);
             }
         });
     }
+
+    pushAjaxLog(request, response, type) {
+        Promise.all([request.json(), response.json()]).then(data => {
+            this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], type);
+            this.pushLog([`[REQUEST BODY] ${data[0]}`], type);
+            this.pushLog([`[RESPONSE DATA] ${data[1]}`], type);
+        }).catch(err => {
+            this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], type);
+        });
+    }
+
     pushLog (msg, type) {
         let text = msg.map(val => {
             return isError(val) ? `${val.stack}` : JSON.stringify(val);

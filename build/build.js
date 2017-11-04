@@ -146,6 +146,7 @@
 	            };
 
 	            // 捕获 xhr 错误
+	            // TODO 添加 REQUEST BODY 和 RESPONSE DATA
 	            var _this = this;
 	            _xhr2.default.fn = function (xhr) {
 	                if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -165,9 +166,9 @@
 	                        _response = _ref.response;
 
 	                    if (_response.status >= 200 && _response.status <= 299) {
-	                        _this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + _response.status + ' (' + _response.statusText + ')'], 'AJAXSUCCESS');
+	                        _this.pushAjaxLog(request, _response, 'AJAXSUCCESS');
 	                    } else {
-	                        _this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + _response.status + ' (' + _response.statusText + ')'], 'AJAXFAILURE');
+	                        _this.pushAjaxLog(request, _response, 'AJAXFAILURE');
 	                    }
 	                    return _response;
 	                },
@@ -175,9 +176,23 @@
 	                    var request = _ref2.request,
 	                        _responseError = _ref2.responseError;
 
+	                    // TODO 待确定
 	                    _this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + _responseError.status + ' (' + _responseError.statusText + ')'], 'AJAXFAILURE');
 	                    return Promise.reject(_responseError);
 	                }
+	            });
+	        }
+	    }, {
+	        key: 'pushAjaxLog',
+	        value: function pushAjaxLog(request, response, type) {
+	            var _this3 = this;
+
+	            Promise.all([request.json(), response.json()]).then(function (data) {
+	                _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
+	                _this3.pushLog(['[REQUEST BODY] ' + data[0]], type);
+	                _this3.pushLog(['[RESPONSE DATA] ' + data[1]], type);
+	            }).catch(function (err) {
+	                _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
 	            });
 	        }
 	    }, {
@@ -193,7 +208,7 @@
 	    }, {
 	        key: 'core',
 	        value: function core() {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            consoleMethods.forEach(function (method) {
 	                var original = window.console[method];
@@ -202,7 +217,7 @@
 	                        args[_key] = arguments[_key];
 	                    }
 
-	                    _this3.pushLog(args, method);
+	                    _this4.pushLog(args, method);
 	                    original.apply(console, args);
 	                };
 	            });
