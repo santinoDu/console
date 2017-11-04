@@ -1,6 +1,20 @@
 const originXMLHttpRequest = window.XMLHttpRequest;
+const { getOwnPropertyNames, getOwnPropertyDescriptor } = Object;
 
-const propertyDescriptors = Object.getOwnPropertyDescriptors(originXMLHttpRequest);
+/*
+* polyfill for Object.getOwnPropertyDescriptors 未考虑 symbol 属性
+* */
+function getOwnPropertyDescriptors(obj) {
+	const descs = {};
+
+	getOwnPropertyNames(obj).forEach(key => {
+		descs[key] = getOwnPropertyDescriptor(obj, key);
+	});
+
+	return descs;
+}
+
+const propertyDescriptors = Object.getOwnPropertyDescriptors ?  Object.getOwnPropertyDescriptors(originXMLHttpRequest) : getOwnPropertyDescriptors(originXMLHttpRequest);
 
 export default function ProxyXMLHttpRequest() {
     const xhr = new originXMLHttpRequest();
