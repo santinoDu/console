@@ -166,9 +166,9 @@
 	                        _response = _ref.response;
 
 	                    if (_response.status >= 200 && _response.status <= 299) {
-	                        _this.pushAjaxLog(request, _response, 'AJAXSUCCESS');
+	                        _this.pushAjaxLog(request.clone(), _response.clone(), 'AJAXSUCCESS');
 	                    } else {
-	                        _this.pushAjaxLog(request, _response, 'AJAXFAILURE');
+	                        _this.pushAjaxLog(request.clone(), _response.clone(), 'AJAXFAILURE');
 	                    }
 	                    return _response;
 	                },
@@ -187,13 +187,17 @@
 	        value: function pushAjaxLog(request, response, type) {
 	            var _this3 = this;
 
-	            Promise.all([request.json(), response.json()]).then(function (data) {
-	                _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
-	                _this3.pushLog(['[REQUEST BODY] ' + data[0]], type);
-	                _this3.pushLog(['[RESPONSE DATA] ' + data[1]], type);
-	            }).catch(function (err) {
-	                _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
-	            });
+	            try {
+	                Promise.all([request.text(), response.text()]).then(function (data) {
+	                    _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
+	                    data[0] && _this3.pushLog(['[REQUEST BODY] ' + data[0]], type);
+	                    data[1] && _this3.pushLog(['[RESPONSE DATA] ' + data[1]], type);
+	                }).catch(function (err) {
+	                    _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
+	                });
+	            } catch (err) {
+	                this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
+	            }
 	        }
 	    }, {
 	        key: 'pushLog',

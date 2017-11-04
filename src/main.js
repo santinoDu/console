@@ -82,9 +82,9 @@ export default class Console {
         const unregister = fetchIntercept.register({
             response: function ({request, response}) {
                 if (response.status >= 200 && response.status <= 299) {
-                    _this.pushAjaxLog(request, response, 'AJAXSUCCESS');
+                    _this.pushAjaxLog(request.clone(), response.clone(), 'AJAXSUCCESS');
                 } else {
-                    _this.pushAjaxLog(request, response, 'AJAXFAILURE');
+                    _this.pushAjaxLog(request.clone(), response.clone(), 'AJAXFAILURE');
                 }
                 return response;
             },
@@ -97,13 +97,17 @@ export default class Console {
     }
 
     pushAjaxLog(request, response, type) {
-        Promise.all([request.json(), response.json()]).then(data => {
+        try {
+            Promise.all([request.text(), response.text()]).then(data => {
+                this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], type);
+                data[0] && this.pushLog([`[REQUEST BODY] ${data[0]}`], type);
+                data[1] && this.pushLog([`[RESPONSE DATA] ${data[1]}`], type);
+            }).catch(err => {
+                this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], type);
+            });
+        } catch(err) {
             this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], type);
-            this.pushLog([`[REQUEST BODY] ${data[0]}`], type);
-            this.pushLog([`[RESPONSE DATA] ${data[1]}`], type);
-        }).catch(err => {
-            this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], type);
-        });
+        }
     }
 
     pushLog (msg, type) {
