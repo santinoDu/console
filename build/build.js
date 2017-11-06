@@ -214,11 +214,9 @@
 	                    data[0] && _this3.pushLog(['[REQUEST BODY] ' + data[0]], type);
 	                    data[1] && _this3.pushLog(['[RESPONSE DATA] ' + data[1]], type);
 	                }).catch(function (err) {
-	                    console.log(err);
 	                    _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
 	                });
 	            } catch (err) {
-	                console.log(err);
 	                this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
 	            }
 	        }

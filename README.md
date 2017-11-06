@@ -1,6 +1,7 @@
 # console.js
 
-a console panel for mobile phone, replace alert
+a console panel for mobile phone, replace alert.
+https://www.npmjs.com/package/mobile-console.js
 
 Preview
 -------
@@ -38,3 +39,8 @@ new MobileConsole();
 
 open `tests/index.html`
 
+### Feature
+
+- Support showing console.log api output. (info, warn, error, debug)
+- Support showing js error.
+- Support showing xhr and fetch's request and response info. (default off)
