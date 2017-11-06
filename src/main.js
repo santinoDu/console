@@ -85,21 +85,25 @@ export default class Console {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status >= 200 && xhr.status <= 299) {
                     _this.pushLog([`[AJAX] ${xhr.open_fn_parmas.method} ${xhr.open_fn_parmas.url} ${xhr.status} (${xhr.statusText})`], 'AJAXSUCCESS');
+                    xhr.send_fn_params.data && _this.pushLog([`[REQUEST BODY] ${xhr.send_fn_params.data}`], 'AJAXSUCCESS');
+                    xhr.responseText && _this.pushLog([`[RESPONSE DATA] ${xhr.responseText}`], 'AJAXSUCCESS');
                 } else {
                     _this.pushLog([`[AJAX] ${xhr.open_fn_parmas.method} ${xhr.open_fn_parmas.url} ${xhr.status} (${xhr.statusText})`], 'AJAXFAILURE');
+                    xhr.send_fn_params.data && _this.pushLog([`[REQUEST BODY] ${xhr.send_fn_params.data}`], 'AJAXFAILURE');
+                    xhr.responseText && _this.pushLog([`[RESPONSE DATA] ${xhr.responseText}`], 'AJAXFAILURE');
                 }
             }
         };
         window.XMLHttpRequest = ProxyXMLHttpRequest;
-
+        {}
         // 捕获 fetch 错误
         const unregister = fetchIntercept.register({
             response: function ({request, response}) {
                 if (_this.ajaxEnable) {
                     if (response.status >= 200 && response.status <= 299) {
-                        _this.pushAjaxLog(request, response, 'AJAXSUCCESS');
+                        _this.pushFetchLog(request, response, 'AJAXSUCCESS');
                     } else {
-                        _this.pushAjaxLog(request, response, 'AJAXFAILURE');
+                        _this.pushFetchLog(request, response, 'AJAXFAILURE');
                     }
                 }
                 return response;
@@ -114,7 +118,7 @@ export default class Console {
         });
     }
 
-    pushAjaxLog(request, response, type) {
+    pushFetchLog(request, response, type) {
         try {
             request = request.clone();
             response = response.clone();

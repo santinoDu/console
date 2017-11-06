@@ -15,8 +15,8 @@
         httpRequest.onreadystatechange = function () {
             console.log('--->', httpRequest.readyState);
         };
-        httpRequest.open('GET', 'http://localhost:3000/posts/1', true);
-        httpRequest.send();
+        httpRequest.open('POST', 'http://localhost:3000/posts', true);
+        httpRequest.send(JSON.stringify( {title:'hjzheng'} ));
 
         fetch('http://localhost:3000/posts', {method:'POST', body: JSON.stringify( {title:'hjzheng'} )}).then(function () {
 

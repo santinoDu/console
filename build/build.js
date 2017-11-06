@@ -167,13 +167,17 @@
 	                if (xhr.readyState === XMLHttpRequest.DONE) {
 	                    if (xhr.status >= 200 && xhr.status <= 299) {
 	                        _this.pushLog(['[AJAX] ' + xhr.open_fn_parmas.method + ' ' + xhr.open_fn_parmas.url + ' ' + xhr.status + ' (' + xhr.statusText + ')'], 'AJAXSUCCESS');
+	                        xhr.send_fn_params.data && _this.pushLog(['[REQUEST BODY] ' + xhr.send_fn_params.data], 'AJAXSUCCESS');
+	                        xhr.responseText && _this.pushLog(['[RESPONSE DATA] ' + xhr.responseText], 'AJAXSUCCESS');
 	                    } else {
 	                        _this.pushLog(['[AJAX] ' + xhr.open_fn_parmas.method + ' ' + xhr.open_fn_parmas.url + ' ' + xhr.status + ' (' + xhr.statusText + ')'], 'AJAXFAILURE');
+	                        xhr.send_fn_params.data && _this.pushLog(['[REQUEST BODY] ' + xhr.send_fn_params.data], 'AJAXFAILURE');
+	                        xhr.responseText && _this.pushLog(['[RESPONSE DATA] ' + xhr.responseText], 'AJAXFAILURE');
 	                    }
 	                }
 	            };
 	            window.XMLHttpRequest = _xhr2.default;
-
+	            {}
 	            // 捕获 fetch 错误
 	            var unregister = _fetch2.default.register({
 	                response: function response(_ref) {
@@ -182,9 +186,9 @@
 
 	                    if (_this.ajaxEnable) {
 	                        if (_response.status >= 200 && _response.status <= 299) {
-	                            _this.pushAjaxLog(request, _response, 'AJAXSUCCESS');
+	                            _this.pushFetchLog(request, _response, 'AJAXSUCCESS');
 	                        } else {
-	                            _this.pushAjaxLog(request, _response, 'AJAXFAILURE');
+	                            _this.pushFetchLog(request, _response, 'AJAXFAILURE');
 	                        }
 	                    }
 	                    return _response;
@@ -202,8 +206,8 @@
 	            });
 	        }
 	    }, {
-	        key: 'pushAjaxLog',
-	        value: function pushAjaxLog(request, response, type) {
+	        key: 'pushFetchLog',
+	        value: function pushFetchLog(request, response, type) {
 	            var _this3 = this;
 
 	            try {
