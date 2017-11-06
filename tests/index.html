@@ -13,12 +13,13 @@
     document.getElementById('link').onclick = function(){
         var httpRequest = new XMLHttpRequest();
         httpRequest.onreadystatechange = function () {
-            console.log('----->', httpRequest.readyState);
+            console.log('--->', httpRequest.readyState);
         };
-        httpRequest.open('GET', '/test', true);
+        httpRequest.open('GET', 'http://localhost:3000/posts/1', true);
         httpRequest.send();
-        fetch('/test-fetch').then(function () {
-            throw new Error('error');
+
+        fetch('http://localhost:3000/posts', {method:'POST', body: JSON.stringify( {title:'hjzheng'} )}).then(function () {
+
         }).catch(function (err) {
             console.log(err);
         });

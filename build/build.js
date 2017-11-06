@@ -209,14 +209,16 @@
 	            try {
 	                request = request.clone();
 	                response = response.clone();
-	                Promise.all([request.json(), response.json()]).then(function (data) {
+	                Promise.all([request.text(), response.text()]).then(function (data) {
 	                    _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
 	                    data[0] && _this3.pushLog(['[REQUEST BODY] ' + data[0]], type);
 	                    data[1] && _this3.pushLog(['[RESPONSE DATA] ' + data[1]], type);
 	                }).catch(function (err) {
+	                    console.log(err);
 	                    _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
 	                });
 	            } catch (err) {
+	                console.log(err);
 	                this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
 	            }
 	        }
@@ -826,6 +828,7 @@
 	var interceptors = [];
 
 	function interceptor(fetch, req) {
+		var cloneReq = req.clone();
 		var reversedInterceptors = interceptors.reduce(function (array, interceptor) {
 			return [interceptor].concat(array);
 		}, []);
@@ -847,9 +850,9 @@
 		promise = promise.then(function (req) {
 			return new Promise(function (resolve, reject) {
 				fetch(req).then(function (res) {
-					resolve({ request: req, response: res });
+					resolve({ request: cloneReq, response: res });
 				}).catch(function (err) {
-					reject({ request: req, responseError: err });
+					reject({ request: cloneReq, responseError: err });
 				});
 			});
 		});

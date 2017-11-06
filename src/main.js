@@ -118,7 +118,7 @@ export default class Console {
         try {
             request = request.clone();
             response = response.clone();
-            Promise.all([request.json(), response.json()]).then(data => {
+            Promise.all([request.text(), response.text()]).then(data => {
                 this.pushLog([`[AJAX] ${request.method} ${request.url} ${response.status} (${response.statusText})`], type);
                 data[0] && this.pushLog([`[REQUEST BODY] ${data[0]}`], type);
                 data[1] && this.pushLog([`[RESPONSE DATA] ${data[1]}`], type);

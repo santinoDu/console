@@ -16,6 +16,7 @@ function attach(env) {
 let interceptors = [];
 
 function interceptor(fetch, req) {
+	const cloneReq = req.clone();
 	const reversedInterceptors = interceptors.reduce((array, interceptor) => [interceptor].concat(array), []);
 	let promise = Promise.resolve(req);
 
@@ -30,9 +31,9 @@ function interceptor(fetch, req) {
 	promise = promise.then(req => {
 		return new Promise((resolve, reject) => {
 			fetch(req).then(res => {
-				resolve({request: req, response: res});
+				resolve({request: cloneReq, response: res});
 			}).catch(err => {
-				reject({request: req, responseError: err});
+				reject({request: cloneReq, responseError: err});
 			});
 		});
 	});
