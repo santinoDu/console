@@ -94,8 +94,8 @@ export default class Console {
                 }
             }
         };
+        
         window.XMLHttpRequest = ProxyXMLHttpRequest;
-        {}
         // 捕获 fetch 错误
         const unregister = fetchIntercept.register({
             response: function ({request, response}) {
