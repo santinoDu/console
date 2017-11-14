@@ -176,8 +176,8 @@
 	                    }
 	                }
 	            };
+
 	            window.XMLHttpRequest = _xhr2.default;
-	            {}
 	            // 捕获 fetch 错误
 	            var unregister = _fetch2.default.register({
 	                response: function response(_ref) {

@@ -28,7 +28,7 @@ export default class Console {
         dom.append(dom.$('body'), ele);
     }
     prepareProperty () {
-        this.ajaxEnable = false;
+        this.ajaxEnable = true;
         this.switchBtn = dom.$(switchBtnSelector);
         // 设置 Switch Button 初始位置, 并使其可以 Drag
         this.switchBtn.style.left = document.documentElement.clientWidth - this.switchBtn.offsetWidth - 10 + "px";
