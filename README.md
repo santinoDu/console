@@ -1,5 +1,8 @@
 # console.js
 
+[![npm version](https://img.shields.io/npm/v/mobile-console.js.svg?style=flat-square)](https://www.npmjs.com/package/mobile-console.js)
+[![npm downloads](https://img.shields.io/npm/dt/mobile-console.js.svg?style=flat-square)](https://www.npmjs.com/package/mobile-console.js)
+
 a console panel for mobile phone, replace alert.
 https://www.npmjs.com/package/mobile-console.js
 
