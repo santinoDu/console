@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/santinoDu/console.git"
+    "url": "git+https://github.com/hjzheng/console.git"
   },
   "author": "dujia",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/santinoDu/console/issues"
+    "url": "https://github.com/hjzheng/console"
   },
-  "homepage": "https://github.com/santinoDu/console#readme",
+  "homepage": "https://github.com/hjzheng/console",
   "devDependencies": {
     "babel-core": "^6.1.21",
     "babel-loader": "^6.1.0",

@@ -19,13 +19,13 @@ Preview
     <img src="images/open.png" />
 </div>
 
-### Build
+### build
 
 ``` bash
 npm run build
 ```
 
-### Install
+### install
 
 ``` bash
 npm i mobile-console.js --save-dev
@@ -38,12 +38,12 @@ import 'mobile-console.js';
 new MobileConsole();
 ```
 
-### Demo
+### demo
 
 open `tests/index.html`
 
-### Feature
+### feature
 
-- Support showing console.log api output. (info, warn, error, debug)
-- Support showing js error.
-- Support showing xhr and fetch's request and response info. (default off)
+- support to show console.log api output. (info, warn, error, debug)
+- support to show js error.
+- support to show xhr and fetch's request and response information. (default off)
