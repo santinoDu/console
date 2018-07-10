@@ -3,11 +3,48 @@
     z-index: 2147483647;
 }
 
+#__console .debug {
+    color: #465ed1;
+}
+
+#__console .error {
+    color: #465ed1;
+    background: #ffe6e3;
+}
+
+#__console .Exception {
+    color: #d10a0d;
+    background: #ffe6e3;
+}
+
+#__console .AJAXSUCCESS {
+    color: #20d10d;
+    background: #ddffc8;
+}
+
+#__console .AJAXFAILURE {
+    color: #d10a0d;
+    background: #ffe6e3;
+}
+
+#__console .info {
+    color: #465ed1;
+    background: #ffffff;
+}
+
+#__console .log {
+    color: #000000;
+    background: #ffffff;
+}
+
+#__console .warn {
+    color: #465ed1;
+    background: #fff7db;
+}
+
 .-c-switch{
     display: block;
     position: fixed;
-    right: 10px;
-    bottom: 10px;
     border-radius: 4px;
     box-shadow: 0 0 8px rgba( 0, 0, 0, .4);
     padding: 8px 16px;
@@ -37,6 +74,7 @@
     padding: 6px 8px;
     overflow: hidden;
     line-height: 1.3;
+    -webkit-user-select: text;
     word-break: break-word;
 }
 
@@ -53,13 +91,22 @@
 .-c-tool{
     position: relative;
     float: left;
-    width: 50%;
+    width: 33.33333%;
     text-align: center;
     text-decoration: none;
     color: #000;
 }
 
 .-c-clear::before{
+    content: "";
+    position: absolute;
+    top: 7px;
+    bottom: 7px;
+    right: 0;
+    border-left: 1px solid #d9d9d9;
+}
+
+.-c-ajax::before{
     content: "";
     position: absolute;
     top: 7px;

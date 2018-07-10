@@ -42,9 +42,13 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -58,6 +62,22 @@
 
 	var _dom2 = _interopRequireDefault(_dom);
 
+	var _drag = __webpack_require__(7);
+
+	var _drag2 = _interopRequireDefault(_drag);
+
+	var _xhr = __webpack_require__(8);
+
+	var _xhr2 = _interopRequireDefault(_xhr);
+
+	var _fetch = __webpack_require__(9);
+
+	var _fetch2 = _interopRequireDefault(_fetch);
+
+	var _type = __webpack_require__(10);
+
+	var _type2 = _interopRequireDefault(_type);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -67,6 +87,7 @@
 	var toolBarSelector = '.-c-toolbar';
 	var clearClass = '-c-clear';
 	var hideClass = '-c-hide';
+	var ajaxClass = '-c-ajax';
 	var logItemClass = '-c-log';
 	var consoleMethods = ['debug', 'error', 'info', 'log', 'warn'];
 
@@ -75,50 +96,148 @@
 	        _classCallCheck(this, Console);
 
 	        this.render();
-	        this.switchBtn = _dom2.default.$(switchBtnSelector);
-	        this.toolBar = _dom2.default.$(toolBarSelector);
-	        this.logBox = _dom2.default.$(logBoxSelector);
+	        this.prepareProperty();
 	        this.bindEvent();
+	        this.catchAjax();
 	        this.core();
 	    }
 
 	    _createClass(Console, [{
 	        key: 'render',
 	        value: function render() {
-	            _dom2.default.append(_dom2.default.$('body'), _dom2.default.createElement('div', null, _index2.default));
+	            var ele = _dom2.default.createElement('div', null, _index2.default);
+	            _dom2.default.append(_dom2.default.$('body'), ele);
+	        }
+	    }, {
+	        key: 'prepareProperty',
+	        value: function prepareProperty() {
+	            this.ajaxEnable = false;
+	            this.switchBtn = _dom2.default.$(switchBtnSelector);
+	            // 设置 Switch Button 初始位置, 并使其可以 Drag
+	            this.switchBtn.style.left = document.documentElement.clientWidth - this.switchBtn.offsetWidth - 10 + "px";
+	            this.switchBtn.style.top = document.documentElement.clientHeight - this.switchBtn.offsetHeight - 10 + "px";
+	            (0, _drag2.default)(this.switchBtn);
+	            this.toolBar = _dom2.default.$(toolBarSelector);
+	            this.logBox = _dom2.default.$(logBoxSelector);
 	        }
 	    }, {
 	        key: 'bindEvent',
 	        value: function bindEvent() {
-	            var _this = this;
+	            var _this2 = this;
 
 	            this.toolBar.addEventListener('click', function (e) {
 	                var target = e.target;
 	                if (target.classList.contains(clearClass)) {
-	                    _dom2.default.html(_this.logBox, '');
+	                    _dom2.default.html(_this2.logBox, '');
 	                } else if (target.classList.contains(hideClass)) {
-	                    _dom2.default.hide(_this.logBox, _this.toolBar).show(_this.switchBtn);
+	                    _dom2.default.hide(_this2.logBox, _this2.toolBar).show(_this2.switchBtn);
+	                }
+	                if (target.classList.contains(ajaxClass)) {
+	                    _this2.ajaxEnable = !_this2.ajaxEnable;
+	                    if (_this2.ajaxEnable) {
+	                        target.innerText = 'AJAX(ON)';
+	                    } else {
+	                        target.innerText = 'AJAX(OFF)';
+	                    }
 	                }
 	            });
 
 	            this.switchBtn.addEventListener('click', function () {
-	                _dom2.default.hide(_this.switchBtn).show(_this.logBox, _this.toolBar);
+	                _dom2.default.hide(_this2.switchBtn).show(_this2.logBox, _this2.toolBar);
+	            });
+
+	            // 捕获页面错误
+	            var _onerror = window.onerror || function noop() {};
+
+	            window.onerror = function (msg, url, lineNo, columnNo, error) {
+	                _onerror();
+	                var message = ['Message: ' + msg, 'URL: ' + url, 'Line: ' + lineNo, 'Column: ' + columnNo, 'Error object: ' + error].join(' <br/> ');
+
+	                _this2.pushLog([message], 'Exception');
+	            };
+	        }
+	    }, {
+	        key: 'catchAjax',
+	        value: function catchAjax() {
+	            // 捕获 xhr 错误
+	            // TODO 添加 REQUEST BODY 和 RESPONSE DATA
+	            var _this = this;
+	            _xhr2.default.fn = function (xhr) {
+	                if (!_this.ajaxEnable) return;
+	                if (xhr.readyState === XMLHttpRequest.DONE) {
+	                    if (xhr.status >= 200 && xhr.status <= 299) {
+	                        _this.pushLog(['[AJAX] ' + xhr.open_fn_parmas.method + ' ' + xhr.open_fn_parmas.url + ' ' + xhr.status + ' (' + xhr.statusText + ')'], 'AJAXSUCCESS');
+	                        xhr.send_fn_params.data && _this.pushLog(['[REQUEST BODY] ' + xhr.send_fn_params.data], 'AJAXSUCCESS');
+	                        xhr.responseText && _this.pushLog(['[RESPONSE DATA] ' + xhr.responseText], 'AJAXSUCCESS');
+	                    } else {
+	                        _this.pushLog(['[AJAX] ' + xhr.open_fn_parmas.method + ' ' + xhr.open_fn_parmas.url + ' ' + xhr.status + ' (' + xhr.statusText + ')'], 'AJAXFAILURE');
+	                        xhr.send_fn_params.data && _this.pushLog(['[REQUEST BODY] ' + xhr.send_fn_params.data], 'AJAXFAILURE');
+	                        xhr.responseText && _this.pushLog(['[RESPONSE DATA] ' + xhr.responseText], 'AJAXFAILURE');
+	                    }
+	                }
+	            };
+
+	            window.XMLHttpRequest = _xhr2.default;
+	            // 捕获 fetch 错误
+	            var unregister = _fetch2.default.register({
+	                response: function response(_ref) {
+	                    var request = _ref.request,
+	                        _response = _ref.response;
+
+	                    if (_this.ajaxEnable) {
+	                        if (_response.status >= 200 && _response.status <= 299) {
+	                            _this.pushFetchLog(request, _response, 'AJAXSUCCESS');
+	                        } else {
+	                            _this.pushFetchLog(request, _response, 'AJAXFAILURE');
+	                        }
+	                    }
+	                    return _response;
+	                },
+	                responseError: function responseError(_ref2) {
+	                    var request = _ref2.request,
+	                        _responseError = _ref2.responseError;
+
+	                    // TODO 待确定
+	                    if (_this.ajaxEnable) {
+	                        _this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + _responseError.status + ' (' + _responseError.statusText + ')'], 'AJAXFAILURE');
+	                    }
+	                    return Promise.reject(_responseError);
+	                }
 	            });
 	        }
 	    }, {
+	        key: 'pushFetchLog',
+	        value: function pushFetchLog(request, response, type) {
+	            var _this3 = this;
+
+	            try {
+	                request = request.clone();
+	                response = response.clone();
+	                Promise.all([request.text(), response.text()]).then(function (data) {
+	                    _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
+	                    data[0] && _this3.pushLog(['[REQUEST BODY] ' + data[0]], type);
+	                    data[1] && _this3.pushLog(['[RESPONSE DATA] ' + data[1]], type);
+	                }).catch(function (err) {
+	                    _this3.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
+	                });
+	            } catch (err) {
+	                this.pushLog(['[AJAX] ' + request.method + ' ' + request.url + ' ' + response.status + ' (' + response.statusText + ')'], type);
+	            }
+	        }
+	    }, {
 	        key: 'pushLog',
-	        value: function pushLog(msg) {
+	        value: function pushLog(msg, type) {
 	            var text = msg.map(function (val) {
-	                return JSON.stringify(val);
+	                return (0, _type2.default)(val) ? '' + val.stack : JSON.stringify(val);
 	            }).join(' '),
-	                log = _dom2.default.createElement('div', { class: logItemClass }, text);
+	                log = _dom2.default.createElement('div', { class: logItemClass + ' ' + type }, text);
 	            _dom2.default.append(this.logBox, log);
 	            this.logBox.scrollTop = this.logBox.scrollHeight;
 	        }
 	    }, {
 	        key: 'core',
 	        value: function core() {
-	            var _this2 = this;
+	            var _this4 = this;
 
 	            consoleMethods.forEach(function (method) {
 	                var original = window.console[method];
@@ -127,7 +246,7 @@
 	                        args[_key] = arguments[_key];
 	                    }
 
-	                    _this2.pushLog(args);
+	                    _this4.pushLog(args, method);
 	                    original.apply(console, args);
 	                };
 	            });
@@ -137,11 +256,14 @@
 	    return Console;
 	}();
 
-	new Console();
+	exports.default = Console;
 
-/***/ },
+
+	window.MobileConsole = Console;
+
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
@@ -155,8 +277,8 @@
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../node_modules/css-loader/index.js!./style.css", function() {
-				var newContent = require("!!./../../node_modules/css-loader/index.js!./style.css");
+			module.hot.accept("!!../../node_modules/css-loader/index.js!./style.css", function() {
+				var newContent = require("!!../../node_modules/css-loader/index.js!./style.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -165,23 +287,23 @@
 		module.hot.dispose(function() { update(); });
 	}
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(3)();
 	// imports
 
 
 	// module
-	exports.push([module.id, "#__console{\n    position: relative;\n    z-index: 2147483647;\n}\n\n.-c-switch{\n    display: block;\n    position: fixed;\n    right: 10px;\n    bottom: 10px;\n    border-radius: 4px;\n    box-shadow: 0 0 8px rgba( 0, 0, 0, .4);\n    padding: 8px 16px;\n    line-height: 1;\n    font-size: 14px;\n    color: #fff;\n    background-color: #04be02;\n}\n\n.-c-content{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 40px;\n    border-top: 1px solid #eee;\n    overflow-x: hidden;\n    overflow-y: auto;\n    max-height: 50%;\n    background-color: #fff;\n    -webkit-overflow-scrolling: touch;\n}\n\n.-c-log{\n    margin: 0;\n    border-bottom: 1px solid #eee;\n    padding: 6px 8px;\n    overflow: hidden;\n    line-height: 1.3;\n    word-break: break-word;\n}\n\n.-c-toolbar{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    line-height: 40px;\n    background-color: #fff;\n}\n\n.-c-tool{\n    position: relative;\n    float: left;\n    width: 50%;\n    text-align: center;\n    text-decoration: none;\n    color: #000;\n}\n\n.-c-clear::before{\n    content: \"\";\n    position: absolute;\n    top: 7px;\n    bottom: 7px;\n    right: 0;\n    border-left: 1px solid #d9d9d9;\n}", ""]);
+	exports.push([module.id, "#__console{\n    position: relative;\n    z-index: 2147483647;\n}\n\n#__console .debug {\n    color: #465ed1;\n}\n\n#__console .error {\n    color: #465ed1;\n    background: #ffe6e3;\n}\n\n#__console .Exception {\n    color: #d10a0d;\n    background: #ffe6e3;\n}\n\n#__console .AJAXSUCCESS {\n    color: #20d10d;\n    background: #ddffc8;\n}\n\n#__console .AJAXFAILURE {\n    color: #d10a0d;\n    background: #ffe6e3;\n}\n\n#__console .info {\n    color: #465ed1;\n    background: #ffffff;\n}\n\n#__console .log {\n    color: #000000;\n    background: #ffffff;\n}\n\n#__console .warn {\n    color: #465ed1;\n    background: #fff7db;\n}\n\n.-c-switch{\n    display: block;\n    position: fixed;\n    border-radius: 4px;\n    box-shadow: 0 0 8px rgba( 0, 0, 0, .4);\n    padding: 8px 16px;\n    line-height: 1;\n    font-size: 14px;\n    color: #fff;\n    background-color: #04be02;\n}\n\n.-c-content{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 40px;\n    border-top: 1px solid #eee;\n    overflow-x: hidden;\n    overflow-y: auto;\n    max-height: 50%;\n    background-color: #fff;\n    -webkit-overflow-scrolling: touch;\n}\n\n.-c-log{\n    margin: 0;\n    border-bottom: 1px solid #eee;\n    padding: 6px 8px;\n    overflow: hidden;\n    line-height: 1.3;\n    -webkit-user-select: text;\n    word-break: break-word;\n}\n\n.-c-toolbar{\n    display: none;\n    position: fixed;\n    left: 0;\n    right: 0;\n    bottom: 0;\n    line-height: 40px;\n    background-color: #fff;\n}\n\n.-c-tool{\n    position: relative;\n    float: left;\n    width: 33.33333%;\n    text-align: center;\n    text-decoration: none;\n    color: #000;\n}\n\n.-c-clear::before{\n    content: \"\";\n    position: absolute;\n    top: 7px;\n    bottom: 7px;\n    right: 0;\n    border-left: 1px solid #d9d9d9;\n}\n\n.-c-ajax::before{\n    content: \"\";\n    position: absolute;\n    top: 7px;\n    bottom: 7px;\n    right: 0;\n    border-left: 1px solid #d9d9d9;\n}", ""]);
 
 	// exports
 
 
-/***/ },
+/***/ }),
 /* 3 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	"use strict";
 
@@ -234,9 +356,9 @@
 		return list;
 	};
 
-/***/ },
+/***/ }),
 /* 4 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*
 		MIT License http://www.opensource.org/licenses/mit-license.php
@@ -251,7 +373,7 @@
 			};
 		},
 		isOldIE = memoize(function() {
-			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
+			return /msie [6-9]\b/.test(self.navigator.userAgent.toLowerCase());
 		}),
 		getHeadElement = memoize(function () {
 			return document.head || document.getElementsByTagName("head")[0];
@@ -486,15 +608,15 @@
 	}
 
 
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
-	module.exports = "<div id=\"__console\">\n    <div class=\"-c-switch\">Console</div>\n    <div class=\"-c-content\"></div>\n    <div class=\"-c-toolbar\">\n        <div class=\"-c-tool -c-clear\">Clear</div>\n        <div class=\"-c-tool -c-hide\">Hide</div>\n    </div>\n</div>\n";
+	module.exports = "<div id=\"__console\">\n    <div class=\"-c-switch\">Console</div>\n    <div class=\"-c-content\"></div>\n    <div class=\"-c-toolbar\">\n        <div class=\"-c-tool -c-clear\">Clear</div>\n        <div class=\"-c-tool -c-ajax\">AJAX(OFF)</div>\n        <div class=\"-c-tool -c-hide\">Hide</div>\n    </div>\n</div>\n";
 
-/***/ },
+/***/ }),
 /* 6 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -553,5 +675,231 @@
 	    }
 	};
 
-/***/ }
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = drag;
+	function drag(obj) {
+
+		obj.ontouchstart = function (evt) {
+
+			var e = evt.targetTouches[0];
+			var disX = e.clientX - this.offsetLeft;
+			var disY = e.clientY - this.offsetTop;
+
+			var handleMove = function handleMove(evt) {
+				evt.preventDefault();
+				var e = evt.targetTouches[0];
+
+				var L = e.clientX - disX;
+				var T = e.clientY - disY;
+
+				if (T < 0) {
+					T = 0;
+				} else if (T > document.documentElement.clientHeight - obj.offsetHeight) {
+					T = document.documentElement.clientHeight - obj.offsetHeight;
+				}
+
+				if (L < 0) {
+					L = 0;
+				} else if (L > document.documentElement.clientWidth - obj.offsetWidth) {
+					L = document.documentElement.clientWidth - obj.offsetWidth;
+				}
+
+				obj.style.left = L + "px";
+				obj.style.top = T + "px";
+			};
+
+			document.addEventListener("touchmove", handleMove, false);
+
+			var handleEnd = function handleEnd() {
+				document.removeEventListener("touchmove", handleMove, false);
+				document.removeEventListener("touchend", handleEnd, false);
+			};
+
+			document.addEventListener("touchend", handleEnd, false);
+		};
+	}
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = ProxyXMLHttpRequest;
+	var originXMLHttpRequest = window.XMLHttpRequest;
+	var getOwnPropertyNames = Object.getOwnPropertyNames,
+	    getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+	/*
+	* polyfill for Object.getOwnPropertyDescriptors 未考虑 symbol 属性
+	* */
+
+	function getOwnPropertyDescriptors(obj) {
+		var descs = {};
+
+		getOwnPropertyNames(obj).forEach(function (key) {
+			descs[key] = getOwnPropertyDescriptor(obj, key);
+		});
+
+		return descs;
+	}
+
+	var propertyDescriptors = Object.getOwnPropertyDescriptors ? Object.getOwnPropertyDescriptors(originXMLHttpRequest) : getOwnPropertyDescriptors(originXMLHttpRequest);
+
+	function ProxyXMLHttpRequest() {
+		var xhr = new originXMLHttpRequest();
+
+		xhr.onreadystatechange = function () {
+			xhr.originOnreadystatechange && xhr.originOnreadystatechange();
+			ProxyXMLHttpRequest.fn.call(null, xhr);
+		};
+
+		Object.defineProperty(xhr, 'onreadystatechange', {
+			set: function set(value) {
+				xhr.originOnreadystatechange = value;
+			}
+		});
+
+		var originOpen = xhr.open.bind(xhr);
+		var originSend = xhr.send.bind(xhr);
+
+		xhr.open = function (method, url, asynchronous, username, password) {
+			xhr.open_fn_parmas = {
+				method: method,
+				url: url,
+				asynchronous: asynchronous
+			};
+			originOpen(method, url, asynchronous, username, password);
+		};
+
+		xhr.send = function (data) {
+			xhr.send_fn_params = {
+				data: data
+			};
+			originSend(data);
+		};
+
+		return xhr;
+	}
+
+	for (var key in propertyDescriptors) {
+		Object.defineProperty(ProxyXMLHttpRequest, key, propertyDescriptors[key]);
+	}
+
+	ProxyXMLHttpRequest.fn = function () {};
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	/*
+	* https://github.com/werk85/fetch-intercept/blob/develop/src/index.js
+	* 对改代码进行修改, 用以支持拦截 fetch 请求, 记录请求
+	* */
+	attach(window);
+
+	function attach(env) {
+		env.fetch = function (fetch) {
+			return function () {
+				for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+					args[_key] = arguments[_key];
+				}
+
+				var req = new (Function.prototype.bind.apply(Request, [null].concat(args)))();
+				return interceptor(fetch, req);
+			};
+		}(env.fetch);
+	}
+
+	var interceptors = [];
+
+	function interceptor(fetch, req) {
+		var cloneReq = req.clone();
+		var reversedInterceptors = interceptors.reduce(function (array, interceptor) {
+			return [interceptor].concat(array);
+		}, []);
+		var promise = Promise.resolve(req);
+
+		// Register request interceptors
+		reversedInterceptors.forEach(function (_ref) {
+			var request = _ref.request,
+			    requestError = _ref.requestError;
+
+			if (request || requestError) {
+				promise = promise.then(function (req) {
+					return request(req);
+				}, requestError);
+			}
+		});
+
+		// Register fetch call
+		promise = promise.then(function (req) {
+			return new Promise(function (resolve, reject) {
+				fetch(req).then(function (res) {
+					resolve({ request: cloneReq, response: res });
+				}).catch(function (err) {
+					reject({ request: cloneReq, responseError: err });
+				});
+			});
+		});
+
+		// Register response interceptors
+		reversedInterceptors.forEach(function (_ref2) {
+			var response = _ref2.response,
+			    responseError = _ref2.responseError;
+
+			if (response || responseError) {
+				promise = promise.then(response, responseError);
+			}
+		});
+
+		return promise;
+	}
+
+	exports.default = {
+		register: function register(interceptor) {
+			interceptors.push(interceptor);
+			return function () {
+				var index = interceptors.indexOf(interceptor);
+				if (index >= 0) {
+					interceptors.splice(index, 1);
+				}
+			};
+		},
+		clear: function clear() {
+			interceptors = [];
+		}
+	};
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = isError;
+	function isError(value) {
+		return Object.prototype.toString.call(value) === '[object Error]';
+	}
+
+/***/ })
 /******/ ]);
