@@ -1,3 +1,5 @@
+# a better console tool https://github.com/Tencent/vConsole
+
 # console.js
 
 [![npm version](https://img.shields.io/npm/v/mobile-console.js.svg?style=flat-square)](https://www.npmjs.com/package/mobile-console.js)
